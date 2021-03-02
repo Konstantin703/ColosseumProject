@@ -34,10 +34,12 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	float BaseLookUpRate;
 
-	void MoveForward(float Value);
-	void MoveRight(float Value);
+	void MoveForward(float InValue);
+	void MoveRight(float InValue);
 	
-	void TurnAtRate(float Rate);
-	void LookUpAtRate(float Rate);
+	void TurnAtRate(float InRate);
+	void LookUpAtRate(float InRate);
+
+	void ToggleCrouch();
 
 };
