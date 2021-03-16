@@ -5,6 +5,7 @@
 #include "ItemBase.generated.h"
 
 class USphereComponent;
+class USkeletalMeshComponent;
 
 UCLASS()
 class COLOSSEUMPROJECT_API AItemBase : public AActor
@@ -15,6 +16,10 @@ public:
 	// Sets default values for this actor's properties
 	AItemBase();
 
+	// TODO: now it's done only for weapon, then make separate class for ammo, health, armor
+	UPROPERTY(VisibleAnywhere, Category = "Item")
+	USkeletalMeshComponent* ItemMesh;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -22,6 +27,9 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Item")
 	USphereComponent* PickupSphere;
+
+	float CustomSphereRadius;
+	
 
 	UFUNCTION()
 	virtual void OnOverlapBegin(

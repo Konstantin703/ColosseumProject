@@ -1,13 +1,20 @@
 #include "ItemBase.h"
 #include "Components/SphereComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 // Sets default values
 AItemBase::AItemBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	ItemMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ItemMesh"));
+	SetRootComponent(ItemMesh);
+
 	PickupSphere = CreateDefaultSubobject<USphereComponent>(TEXT("PickupSphere"));
-	SetRootComponent(PickupSphere);
+	PickupSphere->SetupAttachment(GetRootComponent());
+
+	CustomSphereRadius = 100;
+	PickupSphere->SetSphereRadius(CustomSphereRadius);
 
 }
 
@@ -15,6 +22,17 @@ AItemBase::AItemBase()
 void AItemBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	PickupSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	PickupSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+	ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	ItemMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	ItemMesh->SetSimulatePhysics(true);
+	ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	
+
+	PickupSphere->OnComponentBeginOverlap.AddDynamic(this, &AItemBase::OnOverlapBegin);
 	
 }
 
