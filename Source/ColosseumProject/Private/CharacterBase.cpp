@@ -6,6 +6,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/Character.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "ItemBase.h"
 
 // Sets default values
 ACharacterBase::ACharacterBase()
@@ -68,6 +70,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ACharacterBase::LookUpAtRate);
 
 	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &ACharacterBase::ToggleCrouch);
+	PlayerInputComponent->BindAction("Pickup", EInputEvent::IE_Pressed, this, &ACharacterBase::PickupWeapon);
 }
 
 void ACharacterBase::MoveForward(float InValue)
@@ -111,7 +114,37 @@ void ACharacterBase::LookUpAtRate(float InRate)
 
 void ACharacterBase::ToggleCrouch()
 {
-	UE_LOG(LogTemp, Warning, TEXT("void ACharacterBase::ToggleCrouch()"));
-
 	GetCharacterMovement()->IsCrouching() ? UnCrouch(true) : Crouch(true);
+}
+
+void ACharacterBase::AddToLootArray(AActor* ItemToAdd)
+{
+	if (!ItemToAdd || LootArray.Contains(ItemToAdd)) return;
+
+	LootArray.Add(ItemToAdd);
+}
+
+void ACharacterBase::RemoveFromLootArray(AActor* ItemToRemove)
+{
+	if (!ItemToRemove || !LootArray.Contains(ItemToRemove)) return;
+
+	LootArray.Remove(ItemToRemove);
+}
+
+//** TODO: make logic of finding the closest weapon on the floor ( or weapon on which camera is looking at) and picking it up */
+void ACharacterBase::PickupWeapon()
+{
+	if (LootArray.Num() == 0) return;
+
+	AItemBase* Weapon = Cast<AItemBase>(LootArray[0]);
+	Weapon->GetItemMesh()->SetSimulatePhysics(false);
+	SetEquippedWeapon(Weapon);
+	// TODO: socket name into settings  
+	const USkeletalMeshSocket* WeaponSocket = GetMesh()->GetSocketByName("WeaponSocket");
+	if (WeaponSocket)
+	{
+		WeaponSocket->AttachActor(LootArray[0], GetMesh());
+	}
+
+
 }
