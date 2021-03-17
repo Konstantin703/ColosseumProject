@@ -39,6 +39,8 @@ ACharacterBase::ACharacterBase()
 	// for crouch
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
+	bAiming = false;
+
 }
 
 // Called when the game starts or when spawned
@@ -52,6 +54,7 @@ void ACharacterBase::BeginPlay()
 void ACharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 
 }
 
@@ -71,6 +74,9 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &ACharacterBase::ToggleCrouch);
 	PlayerInputComponent->BindAction("Pickup", EInputEvent::IE_Pressed, this, &ACharacterBase::PickupWeapon);
+
+	PlayerInputComponent->BindAction("Aim", EInputEvent::IE_Pressed, this, &ACharacterBase::ToggleAim);
+	PlayerInputComponent->BindAction("Aim", EInputEvent::IE_Released, this, &ACharacterBase::ToggleAim);
 }
 
 void ACharacterBase::MoveForward(float InValue)
@@ -117,6 +123,24 @@ void ACharacterBase::ToggleCrouch()
 	GetCharacterMovement()->IsCrouching() ? UnCrouch(true) : Crouch(true);
 }
 
+void ACharacterBase::ToggleAim()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Aiming"));
+	bAiming = !bAiming;
+
+	// TODO: make smoother turn of chracter to camera
+	if (bAiming)
+	{
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+	}
+	else
+	{
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}	
+}
+
 void ACharacterBase::AddToLootArray(AActor* ItemToAdd)
 {
 	if (!ItemToAdd || LootArray.Contains(ItemToAdd)) return;
@@ -136,15 +160,26 @@ void ACharacterBase::PickupWeapon()
 {
 	if (LootArray.Num() == 0) return;
 
-	AItemBase* Weapon = Cast<AItemBase>(LootArray[0]);
-	Weapon->GetItemMesh()->SetSimulatePhysics(false);
-	SetEquippedWeapon(Weapon);
-	// TODO: socket name into settings  
-	const USkeletalMeshSocket* WeaponSocket = GetMesh()->GetSocketByName("WeaponSocket");
-	if (WeaponSocket)
+
+
+	if (EquippedWeapon)
 	{
-		WeaponSocket->AttachActor(LootArray[0], GetMesh());
+		AItemBase* Temp = EquippedWeapon;
+		Temp->Destroy();
+		EquippedWeapon = nullptr;
 	}
 
-
+	AItemBase* Weapon = Cast<AItemBase>(LootArray[0]);
+	if (Weapon)
+	{		
+		Weapon->GetItemMesh()->SetSimulatePhysics(false);
+		SetEquippedWeapon(Weapon);
+		// TODO: socket name into settings  
+		const USkeletalMeshSocket* WeaponSocket = GetMesh()->GetSocketByName("WeaponSocket");
+		if (WeaponSocket)
+		{			
+			WeaponSocket->AttachActor(LootArray[0], GetMesh());
+			RemoveFromLootArray(Weapon);
+		}
+	}
 }

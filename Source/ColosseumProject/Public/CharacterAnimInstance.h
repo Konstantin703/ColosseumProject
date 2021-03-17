@@ -30,7 +30,14 @@ public:
 	float MovementTransition;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
+	float AimYaw;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
+	float AimPitch;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsInCrouch;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bIsAiming;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	APawn* Pawn;
@@ -39,5 +46,11 @@ public:
 
 private:
 	bool GetAnimOwner();
+
+	void UpdateMovement();
+	void UpdateAiming();
+
+	const float MinAimingAngle = -90.f;
+	const float MaxAimingAngle = 90.f;
 	
 };

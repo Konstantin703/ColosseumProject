@@ -16,18 +16,19 @@ class COLOSSEUMPROJECT_API ACharacterBase : public ACharacter
 	GENERATED_BODY()
 
 public:
-	ACharacterBase();
-
-	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	ACharacterBase();	
 
 	void AddToLootArray(AActor* ItemToAdd);
 	void RemoveFromLootArray(AActor* ItemToRemove);
 
 	FORCEINLINE void SetEquippedWeapon(AItemBase* WeaponToEquip) { EquippedWeapon = WeaponToEquip; }
 
+	FORCEINLINE bool IsAiming() { return bAiming; }
+
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void Tick(float DeltaTime) override;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
@@ -46,6 +47,8 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Loot")
 	TArray<AActor*> LootArray;
 
+	bool bAiming;
+
 	void MoveForward(float InValue);
 	void MoveRight(float InValue);
 	
@@ -53,6 +56,8 @@ private:
 	void LookUpAtRate(float InRate);
 
 	void ToggleCrouch();
+
+	void ToggleAim();
 	//** Picking up means equiping too, if weapon equipped drop it and equip new */
 	void PickupWeapon();
 
